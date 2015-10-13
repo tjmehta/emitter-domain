@@ -1,0 +1,46 @@
+{
+  "name": "emitter-domain",
+  "version": "1.0.0",
+  "description": "use this domain for easier error handling for event-emitters",
+  "main": "index.js",
+  "scripts": {
+    "test": "lab --threshold 100 --assert code --verbose",
+    "test-watch": "nodemon -x npm test",
+    "lint": "standard",
+    "format": "standard-format -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tjmehta/emitter-domain.git"
+  },
+  "keywords": [
+    "domain",
+    "event",
+    "emitter",
+    "events",
+    "emitters",
+    "throw",
+    "active",
+    "error",
+    "implicit"
+  ],
+  "dependencies": {
+    "101": "^1.1.1",
+    "set-prototype-of": "^1.0.0"
+  },
+  "devDependencies": {
+    "code": "^1.5.0",
+    "lab": "^6.2.0",
+    "nodemon": "^1.7.1",
+    "sinon": "^1.17.1",
+    "standard": "^5.3.1",
+    "standard-format": "^1.6.8",
+    "supertest": "^1.1.0"
+  },
+  "author": "Tejesh Mehta",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tjmehta/emitter-domain/issues"
+  },
+  "homepage": "https://github.com/tjmehta/emitter-domain"
+}
