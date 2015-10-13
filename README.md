@@ -1,4 +1,4 @@
-# emitter-domain
+# emitter-domain [![Build Status](https://travis-ci.org/tjmehta/emitter-domain.svg?branch=master)](https://travis-ci.org/tjmehta/emitter-domain)
 Allows for improved domain error handling for emitters
 
 ## Domain EventEmitter Error Handling in Node
