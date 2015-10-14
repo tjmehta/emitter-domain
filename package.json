@@ -1,6 +1,6 @@
 {
   "name": "emitter-domain",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "use this domain for easier error handling for event-emitters",
   "main": "index.js",
   "scripts": {
