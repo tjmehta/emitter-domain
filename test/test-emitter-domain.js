@@ -225,6 +225,34 @@ describe('emitter-domain', function () {
         })
       })
     })
+
+    describe('complex emit and on calls', function () {
+      it('should work through emits and ons and not propagate a bound emitter as the context', function (done) {
+        var initDomain = EmitterDomain.create()
+        var emitter
+        initDomain.run(function () {
+          // initialize emitter w/in initDomain
+          emitter = new EventEmitter()
+        })
+        var emitDomain = Domain.create()
+        emitDomain.title = 1
+        emitDomain.run(function () {
+          emitter.on('one', function () {
+            expect(Domain.active).to.equal(emitDomain)
+            this.emit('two')
+          })
+        })
+        var emitDomain2 = Domain.create()
+        emitDomain2.title = 2
+        emitDomain2.run(function () {
+          emitter.on('two', function () {
+            expect(Domain.active).to.equal(emitDomain2)
+            done()
+          })
+        })
+        emitter.emit('one')
+      })
+    })
   })
 
   describe('restore', function () {})
