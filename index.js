@@ -19,9 +19,11 @@ function EmitterDomain () {
 
 require('util').inherits(EmitterDomain, DomainClass)
 
-EmitterDomain.create = function () {
-  return new EmitterDomain()
-}
+EmitterDomain.create = 
+  EmitterDomain.createDomain = 
+    function () {
+      return new EmitterDomain()
+    }
 
 EmitterDomain.wrapEventEmitterMethods = function () {
   var onAlreadyWrapped = EventEmitter.prototype.on instanceof Wrap
