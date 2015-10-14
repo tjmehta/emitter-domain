@@ -2,8 +2,8 @@ var Domain = require('domain')
 var DomainClass = Domain.Domain
 var EventEmitter = require('events').EventEmitter
 var isFunction = require('101/is-function')
-var pluck = require('101/pluck')
 var wrap = require('./lib/create-wrap.js')
+var BoundEmitter = require('./lib/bound-emitter.js')
 var Wrap = wrap.Wrap
 require('set-prototype-of')
 var isEmitterDomain = function (o) {
@@ -30,16 +30,22 @@ EmitterDomain.wrapEventEmitterMethods = function () {
 
   if (!onAlreadyWrapped) {
     wrap(EventEmitter.prototype, 'on', function (on, args) {
+      // If this emit is invoked from a chain of events,
+      // `this` could still be a BoundEmitter instead of
+      // the emitter. Get the emitter if it is.
+      var ctx = BoundEmitter.unbindIfBound(this)
       // `this` is the event emitter instance
       var listener = args[1]
-      if (!isEmitterDomain(this.domain) || !isFunction(listener)) {
-        return on.apply(this, args) // default behavior
+      if (!isEmitterDomain(ctx.domain) || !isFunction(listener)) {
+        return on.apply(ctx, args) // default behavior
       }
+      // if active domain exists bind it to the listener
+      // and save the bound function to use in emit
       listener.__boundEmitterDomain = Domain.active
         ? Domain.active.bind(listener) // create domain bound listener to be used in emit
         : listener
 
-      return on.apply(this, args)
+      return on.apply(ctx, args)
     })
     EventEmitter.prototype.addListener = EventEmitter.prototype.on
   }
@@ -48,39 +54,19 @@ EmitterDomain.wrapEventEmitterMethods = function () {
 
   if (!emitAlreadyWrapped) {
     wrap(EventEmitter.prototype, 'emit', function (emit, args) {
-      var ctx = this
+      // If this emit is invoked from a chain of events,
+      // `this` could still be a BoundEmitter instead of
+      // the emitter. Get the emitter if it is.
+      var ctx = BoundEmitter.unbindIfBound(this)
       var eventType = args[0]
       // `this` is the event emitter instance
-      if (isEmitterDomain(this.domain)) {
-        ctx = createCtxForEmit(this, eventType)
+      if (isEmitterDomain(ctx.domain)) {
+        ctx = new BoundEmitter(ctx, eventType)
       }
 
       return emit.apply(ctx, args)
     })
   }
-}
-function createCtxForEmit (emitter, type) {
-  // use active domain in place of emitter domain
-  var ctx = {
-    domain: Domain.active
-  }
-  Object.setPrototypeOf(ctx, emitter)
-  // no need to copy events if there aren't any handlers for the event
-  if (EventEmitter.listenerCount(emitter, type)) {
-    // use domain bound handlers in place of handlers
-    var _events = ctx._events = {}
-    Object.setPrototypeOf(_events, emitter._events)
-    var handlers = emitter._events[type]
-    if (isFunction(handlers)) {
-      // handlers is a single handler
-      _events[type] = handlers.__boundEmitterDomain
-    } else {
-      // handlers is an array of handlers
-      _events[type] = handlers.map(pluck('__boundEmitterDomain'))
-    }
-  }
-
-  return ctx
 }
 
 EmitterDomain.restoreEventEmitterMethods = function () {
